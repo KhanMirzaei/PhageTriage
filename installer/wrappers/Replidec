@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export PATH="${ROOT}/envs/replidec/bin:${PATH}"
+exec "${ROOT}/envs/replidec/bin/Replidec" "$@"

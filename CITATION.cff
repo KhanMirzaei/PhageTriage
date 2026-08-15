@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use PhageTriage, cite this software and each upstream analysis tool used in your run."
+title: "PhageTriage"
+type: software
+version: 0.7.0
+date-released: 2026-08-15
+license: MIT
+repository-code: "https://github.com/USERNAME/phagetriage"
+authors:
+  - name: "PhageTriage contributors"

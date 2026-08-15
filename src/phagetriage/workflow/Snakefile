@@ -1,0 +1,165 @@
+import shlex
+import sys
+from pathlib import Path
+
+from phagetriage.fasta import read_fasta
+
+INPUT = str(Path(config["input"]).resolve())
+OUT = str(Path(config["output"]).resolve())
+THREADS = int(config.get("threads", 4))
+HOSTS = config.get("hosts")
+EXE = config.get("executables", {})
+PHAROKKA = EXE.get("pharokka", "pharokka")
+REPLIDEC = EXE.get("replidec", "Replidec")
+VIRALCOMPLETE = EXE.get("viralcomplete", "viralcomplete")
+TAXMYPHAGE = EXE.get("taxmyphage", "taxmyphage")
+PHIST = EXE.get("phist", "phist.py")
+RAFAH = EXE.get("rafah", "RaFAH.py")
+PHAROKKA_DB = config.get("pharokka_db")
+TAXMYPHAGE_DB = config.get("taxmyphage_db")
+SAMPLES = [record.sample for record in read_fasta(Path(INPUT))]
+INPUTS = f"{OUT}/inputs"
+TOOLS = f"{OUT}/tools"
+LOGS = f"{OUT}/logs"
+
+PHIST_INPUT = [f"{TOOLS}/phist"] if HOSTS else []
+
+
+rule all:
+    input:
+        f"{OUT}/report/index.html",
+        f"{OUT}/report/results.json",
+        f"{OUT}/report/summary.tsv",
+
+
+rule normalize_input:
+    input:
+        INPUT
+    output:
+        combined=f"{INPUTS}/all_contigs.fasta",
+        samples=expand(f"{INPUTS}/{{sample}}.fasta", sample=SAMPLES),
+    params:
+        topology=config.get("topology", "auto"),
+        min_overlap=int(config.get("min_terminal_overlap", 20)),
+        max_overlap=int(config.get("max_terminal_overlap", 500)),
+    script:
+        "scripts/normalize.py"
+
+
+rule pharokka:
+    input:
+        f"{INPUTS}/{{sample}}.fasta"
+    output:
+        directory(f"{TOOLS}/pharokka/{{sample}}")
+    threads: THREADS
+    log:
+        f"{LOGS}/pharokka/{{sample}}.log"
+    conda:
+        "envs/pharokka.yaml"
+    params:
+        exe=PHAROKKA,
+        dbarg=(f"-d {shlex.quote(str(PHAROKKA_DB))}" if PHAROKKA_DB else ""),
+    shell:
+        "set +e; {params.exe:q} run -i {input:q} -o {output:q} -t {threads} -p {wildcards.sample:q} {params.dbarg} -f > {log:q} 2>&1; code=$?; set -e; mkdir -p {output:q}; if [ $code -eq 0 ]; then printf 'complete\\n' > {output:q}/.phagetriage_status; else printf 'failed:%s\\n' \"$code\" > {output:q}/.phagetriage_status; fi"
+
+
+rule replidec:
+    input:
+        f"{INPUTS}/all_contigs.fasta"
+    output:
+        directory(f"{TOOLS}/replidec")
+    threads: THREADS
+    log:
+        f"{LOGS}/replidec.log"
+    conda:
+        "envs/replidec.yaml"
+    params:
+        exe=REPLIDEC
+    shell:
+        "set +e; mkdir -p {output:q}; cd {output:q}; {params.exe:q} -p multi_fasta -i {input:q} -w {output:q} -n prediction_summary.tsv -t {threads} > {log:q} 2>&1; code=$?; set -e; if [ $code -eq 0 ]; then printf 'complete\\n' > {output:q}/.phagetriage_status; else printf 'failed:%s\\n' \"$code\" > {output:q}/.phagetriage_status; fi"
+
+
+rule viralcomplete:
+    input:
+        f"{INPUTS}/all_contigs.fasta"
+    output:
+        directory(f"{TOOLS}/viralcomplete")
+    threads: THREADS
+    log:
+        f"{LOGS}/viralcomplete.log"
+    params:
+        exe=VIRALCOMPLETE,
+        threshold=float(config.get("completeness_threshold", 0.9)),
+    shell:
+        "set +e; {params.exe:q} -f {input:q} -o {output:q} -t {threads} -thr {params.threshold} > {log:q} 2>&1; code=$?; set -e; mkdir -p {output:q}; if [ $code -eq 0 ]; then printf 'complete\\n' > {output:q}/.phagetriage_status; else printf 'failed:%s\\n' \"$code\" > {output:q}/.phagetriage_status; fi"
+
+
+rule rafah:
+    input:
+        expand(f"{INPUTS}/{{sample}}.fasta", sample=SAMPLES)
+    output:
+        directory(f"{TOOLS}/rafah")
+    threads: THREADS
+    log:
+        f"{LOGS}/rafah.log"
+    params:
+        exe=RAFAH
+    shell:
+        "set +e; mkdir -p {output:q}/input; for fasta in {input}; do cp \"$fasta\" {output:q}/input/; done; {params.exe:q} -i {output:q}/input -o {output:q} -t {threads} > {log:q} 2>&1; code=$?; set -e; if [ $code -eq 0 ]; then printf 'complete\\n' > {output:q}/.phagetriage_status; else printf 'failed:%s\\n' \"$code\" > {output:q}/.phagetriage_status; fi"
+
+
+rule taxmyphage:
+    input:
+        f"{INPUTS}/all_contigs.fasta"
+    output:
+        directory(f"{TOOLS}/taxmyphage")
+    threads: THREADS
+    log:
+        f"{LOGS}/taxmyphage.log"
+    conda:
+        "envs/taxmyphage.yaml"
+    params:
+        exe=TAXMYPHAGE,
+        dbarg=(f"-db {shlex.quote(str(TAXMYPHAGE_DB))}" if TAXMYPHAGE_DB else ""),
+    shell:
+        "set +e; {params.exe:q} run -i {input:q} -o {output:q} -t {threads} {params.dbarg} > {log:q} 2>&1; code=$?; set -e; mkdir -p {output:q}; if [ $code -eq 0 ]; then printf 'complete\\n' > {output:q}/.phagetriage_status; else printf 'failed:%s\\n' \"$code\" > {output:q}/.phagetriage_status; fi"
+
+
+if HOSTS:
+    rule phist:
+        input:
+            f"{INPUTS}/all_contigs.fasta"
+        output:
+            directory(f"{TOOLS}/phist")
+        threads: THREADS
+        log:
+            f"{LOGS}/phist.log"
+        params:
+            exe=PHIST,
+            hosts=str(Path(HOSTS).resolve()),
+        shell:
+            "set +e; {params.exe:q} {input:q} {params.hosts:q} {output:q} -t {threads} > {log:q} 2>&1; code=$?; set -e; mkdir -p {output:q}; if [ $code -eq 0 ]; then printf 'complete\\n' > {output:q}/.phagetriage_status; else printf 'failed:%s\\n' \"$code\" > {output:q}/.phagetriage_status; fi"
+
+
+rule report:
+    input:
+        combined=f"{INPUTS}/all_contigs.fasta",
+        pharokka=expand(f"{TOOLS}/pharokka/{{sample}}", sample=SAMPLES),
+        replidec=f"{TOOLS}/replidec",
+        viralcomplete=f"{TOOLS}/viralcomplete",
+        taxmyphage=f"{TOOLS}/taxmyphage",
+        rafah=f"{TOOLS}/rafah",
+        phist=PHIST_INPUT,
+    output:
+        html=f"{OUT}/report/index.html",
+        json=f"{OUT}/report/results.json",
+        tsv=f"{OUT}/report/summary.tsv",
+    params:
+        original=INPUT,
+        out=OUT,
+        topology=config.get("topology", "auto"),
+        min_overlap=int(config.get("min_terminal_overlap", 20)),
+        max_overlap=int(config.get("max_terminal_overlap", 500)),
+        phist_enabled=bool(HOSTS),
+    script:
+        "scripts/report.py"

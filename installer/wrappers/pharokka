@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export PATH="${ROOT}/envs/pharokka/bin:${PATH}"
+exec "${ROOT}/envs/pharokka/bin/pharokka" "$@"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export PHAGETRIAGE_INSTALL_ROOT="${ROOT}"
+export PATH="${ROOT}/bin:${PATH}"
+export PHAGETRIAGE_PHAROKKA_DB="${PHAGETRIAGE_PHAROKKA_DB:-${ROOT}/databases/pharokka}"
+export PHAGETRIAGE_TAXMYPHAGE_DB="${PHAGETRIAGE_TAXMYPHAGE_DB:-${ROOT}/databases/taxmyphage}"
+exec "${ROOT}/envs/phagetriage/bin/python" -m phagetriage "$@"
