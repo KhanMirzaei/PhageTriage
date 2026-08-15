@@ -9,7 +9,7 @@ PhageTriage is a Snakemake workflow for conservative genomic screening of assemb
 - **viralComplete**: reference-based phage-genome completeness assessment.
 - **RaFAH**: phage-only host-genus prediction from genome-derived protein content and precomputed random-forest models.
 - **taxmyPHAGE**: ICTV taxonomy, similarity analysis, and closest classified phages.
-- **PhageTriage Python reporting**: evidence gates, topology-aware maps, HTML, JSON, and TSV output.
+- **Python reporting**: evidence gates, topology-aware maps, HTML, JSON, and TSV output.
 
 The deliberately lean workflow does **not** include iPHoP, geNomad, or BACPHLIP. RaFAH is the default phage-only host predictor; PHIST remains optional when a candidate-host genome collection is supplied. taxmyPHAGE provides taxonomy and closest-phage analysis; RepliDec is the sole replication-cycle predictor.
 
