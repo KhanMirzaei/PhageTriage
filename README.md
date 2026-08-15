@@ -2,8 +2,6 @@
 
 PhageTriage is a Snakemake workflow for conservative genomic screening of assembled bacteriophage contigs for phage-therapy research.
 
-> **Genome-first triage of therapeutic phage candidates.**
-
 ## Final tool set
 
 - **Pharokka**: phage annotation, CARD antimicrobial-resistance hits, VFDB virulence-factor hits, and annotation-derived phage RNA polymerases.
