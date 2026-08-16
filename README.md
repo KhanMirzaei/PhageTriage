@@ -13,7 +13,7 @@ PhageTriage is a Snakemake workflow for conservative genomic screening of assemb
 
 The deliberately lean workflow does **not** include iPHoP, geNomad, or BACPHLIP. RaFAH is the default phage-only host predictor; PHIST remains optional when a candidate-host genome collection is supplied. taxmyPHAGE provides taxonomy and closest-phage analysis; RepliDec is the sole replication-cycle predictor.
 
-> **Research-use-only.** A computationally acceptable result is not evidence that a phage is clinically safe or effective. Experimental lysogeny and transduction testing, read-backed genome closure, host-range testing, sterility/endotoxin controls, efficacy studies, and appropriate regulatory review remain necessary.
+> **Research-use-only.** A computationally acceptable result alone is not evidence that a phage is clinically safe or effective. 
 
 ## Quick start
 
