@@ -38,7 +38,7 @@ The same upstream limitation applies to analysis `--output`, `--hosts`, and
 database paths. PhageTriage rejects these paths early rather than allowing a
 partial, misleading run. Input FASTA paths may contain spaces.
 
-The installer creates isolated environments for PhageTriage/Snakemake, Pharokka, RepliDec, taxmyPHAGE, viralComplete and RaFAH. RaFAH uses its Perl/R environment with Prodigal, HMMER and the precomputed host models. viralComplete is cloned and executed with a dedicated environment containing BLAST, Biopython and Prodigal. PHIST is optional and not part of the default installation.
+The installer creates isolated environments for PhageTriage/Snakemake, Pharokka, RepliDec, taxmyPHAGE, viralComplete and RaFAH. RaFAH uses its Perl/R environment with Prodigal, HMMER and the precomputed host models. viralComplete is cloned with its packaged reference assets and executed with a dedicated environment containing BLAST, Biopython and Prodigal. PHIST is optional and not part of the default installation.
 
 The Pharokka and taxmyPHAGE databases are downloaded by default. To defer the large database downloads:
 

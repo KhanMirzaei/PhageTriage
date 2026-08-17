@@ -103,6 +103,15 @@ fi
 if [[ ! -d "${INSTALL_PREFIX}/src/viralComplete/.git" ]]; then
     git clone https://github.com/ablab/viralComplete.git "${INSTALL_PREFIX}/src/viralComplete"
 fi
+for viralcomplete_asset in \
+    "${INSTALL_PREFIX}/src/viralComplete/bin/viralcomplete" \
+    "${INSTALL_PREFIX}/src/viralComplete/data/viral_genomes_all.pkl" \
+    "${INSTALL_PREFIX}/src/viralComplete/blast_db/train_proteins_refseq.phr"; do
+    if [[ ! -s "$viralcomplete_asset" ]]; then
+        printf 'viralComplete installation is incomplete; missing %s\n' "$viralcomplete_asset" >&2
+        exit 1
+    fi
+done
 
 if [[ ! -s "${INSTALL_PREFIX}/src/RaFAH/RaFAH_v0.2.pl" ]]; then
     mkdir -p "${INSTALL_PREFIX}/src/RaFAH"

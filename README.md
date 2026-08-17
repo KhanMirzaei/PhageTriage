@@ -95,7 +95,7 @@ Snakemake supplies dependency-aware execution, automatic resumability, per-rule 
 
 ### Install everything with one command
 
-The bundled installer creates separate environments for every tool, installs RaFAH and viralComplete, installs PhageTriage/Snakemake, and downloads the Pharokka and taxmyPHAGE databases:
+The bundled installer creates separate environments for every tool, installs RaFAH and viralComplete (including the reference assets shipped by viralComplete), installs PhageTriage/Snakemake, and downloads the Pharokka and taxmyPHAGE databases:
 
 ```bash
 bash phagetriage.sh install
@@ -140,7 +140,7 @@ python -m venv .venv
 pip install -e .
 ```
 
-Pharokka, RepliDec, taxmyPHAGE, and RaFAH have rule-specific Conda environments. Install viralComplete from its source repository with its BLAST database and provide the executable paths when they are not on `PATH`.
+Pharokka, RepliDec, taxmyPHAGE, viralComplete, and RaFAH have isolated environments or wrappers. The viralComplete source repository and its packaged reference assets are installed automatically.
 
 Install the databases required by each upstream tool. For example:
 
